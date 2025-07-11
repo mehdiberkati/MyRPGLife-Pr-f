@@ -404,8 +404,9 @@ class MyRPGLife {
         this.data.totalXP += amount;
         this.data.dailyXP += amount;
         
-        // Ajouter à l'activité récente
-        this.addRecentActivity(`+${amount} XP`, reason);
+        // Ajouter à l'activité récente en formatant le signe correctement
+        const formatted = amount >= 0 ? `+${amount}` : `${amount}`;
+        this.addRecentActivity(`${formatted} XP`, reason);
         
         const newRank = this.getCurrentRank();
         
@@ -782,6 +783,25 @@ class MyRPGLife {
                 </div>
             `;
         }
+    }
+
+    showRankList() {
+        const modal = this.createModal('Rangs & Titres', `
+            <div class="rank-list">
+                ${this.ranks.map(rank => `
+                    <div class="rank-item">
+                        <div class="rank-insignia" style="background: ${rank.color}">${rank.badge}</div>
+                        <div>
+                            <h4>${rank.name} - <span class="rank-title">${rank.title}</span></h4>
+                            <p>À partir de ${rank.minXP} XP</p>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `);
+
+        document.body.appendChild(modal);
+        this.showModal();
     }
     
     getIntensityLevel() {
