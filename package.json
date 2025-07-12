@@ -1,0 +1,29 @@
+{
+  "name": "myrpglife",
+  "version": "1.0.0",
+  "description": "Application desktop Electron pour MyRPGLife",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^26.2.1",
+    "electron-builder": "^24.6.0"
+  },
+  "build": {
+    "appId": "com.example.myrpglife",
+    "productName": "MyRPGLife",
+    "files": [
+      "**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    }
+  }
+}
