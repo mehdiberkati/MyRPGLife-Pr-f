@@ -66,6 +66,10 @@
                 <i class="fas fa-chart-line"></i>
                 <span>Progression</span>
             </button>
+            <button class="nav-btn" data-section="projects">
+                <i class="fas fa-folder-open"></i>
+                <span>Projets</span>
+            </button>
             <button class="nav-btn" data-section="settings">
                 <i class="fas fa-cog"></i>
                 <span>Paramètres</span>
@@ -153,6 +157,12 @@
                                 <label for="focusDuration">Durée (minutes):</label>
                                 <input type="range" id="focusDuration" min="15" max="120" value="25" step="5">
                                 <span id="durationDisplay">25 min</span>
+                            </div>
+                            <div class="project-selection">
+                                <label for="projectSelect">Projet :</label>
+                                <select id="projectSelect">
+                                    <option value="">Aucun</option>
+                                </select>
                             </div>
                         </div>
                         
@@ -306,6 +316,18 @@
                 </div>
             </section>
 
+            <!-- Section Projets -->
+            <section id="projects" class="content-section">
+                <div class="projects-container">
+                    <h2>Gestion de Projets</h2>
+                    <div class="project-add">
+                        <input type="text" id="newProjectName" placeholder="Nom du projet">
+                        <button id="addProjectBtn">Ajouter</button>
+                    </div>
+                    <ul class="project-list" id="projectList"></ul>
+                </div>
+            </section>
+
             <!-- Section Paramètres -->
             <section id="settings" class="content-section">
                 <div class="settings-container">
@@ -343,6 +365,7 @@
     <div id="notificationContainer" class="notification-container"></div>
 
     <!-- Scripts -->
+    <script src="https://apis.google.com/js/api.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

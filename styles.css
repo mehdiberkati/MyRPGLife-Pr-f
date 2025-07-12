@@ -1656,6 +1656,55 @@ body {
     pointer-events: none;
 }
 
+/* Gestion de projets */
+.project-selection {
+    margin: var(--spacing-md) 0;
+}
+
+.project-selection select {
+    padding: var(--spacing-xs);
+    border-radius: var(--border-radius);
+    background: var(--primary-bg);
+    color: var(--text-primary);
+}
+
+.projects-container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.project-add {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+}
+
+.project-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.project-item {
+    background: linear-gradient(135deg, var(--secondary-bg) 0%, var(--tertiary-bg) 100%);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--spacing-md);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-item button {
+    background: var(--danger-red);
+    border: none;
+    color: white;
+    padding: 0 var(--spacing-sm);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+}
+
 .overflow-hidden {
     overflow: hidden;
 }
