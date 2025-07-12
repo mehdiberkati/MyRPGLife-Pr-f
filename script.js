@@ -73,6 +73,8 @@ class MyRPGLife {
     
     init() {
         this.setupEventListeners();
+        this.renderProjectOptions();
+        this.renderProjects();
         this.updateUI();
         this.checkDailyReset();
         this.loadAchievements();
@@ -106,6 +108,7 @@ class MyRPGLife {
             week: 1,
             weeklyScores: [],
             intensityRate: 0,
+            projects: [],
             connectedAccounts: {
                 spotify: false,
                 google: false
@@ -161,7 +164,23 @@ class MyRPGLife {
             this.updateTimerDisplay();
             this.updateXPPreview();
         });
-        
+
+        // Gestion des projets
+        document.getElementById('addProjectBtn').addEventListener('click', () => {
+            const name = document.getElementById('newProjectName').value.trim();
+            if (name) {
+                this.addProject(name);
+                document.getElementById('newProjectName').value = '';
+            }
+        });
+
+        document.getElementById('projectList').addEventListener('click', (e) => {
+            if (e.target.dataset.action === 'delete') {
+                const id = e.target.dataset.id;
+                this.removeProject(id);
+            }
+        });
+    
         // Fermeture des modales
         document.getElementById('modalOverlay').addEventListener('click', (e) => {
             if (e.target === e.currentTarget) {
@@ -202,6 +221,10 @@ class MyRPGLife {
             this.showAchievements();
         } else if (sectionName === 'progression') {
             this.showProgression();
+        } else if (sectionName === 'projects') {
+            this.renderProjects();
+        } else if (sectionName === 'focus') {
+            this.renderProjectOptions();
         }
     }
     
@@ -292,10 +315,13 @@ class MyRPGLife {
     completeSession() {
         this.timer.isRunning = false;
         this.timer.isPaused = false;
-        
+
         const sessionDuration = Math.floor((this.timer.totalTime) / 60); // en minutes
         const xpGained = this.calculateXP(sessionDuration);
-        
+
+        const sessionType = this.data.mandatorySessionsToday < 2 ? 'normal' : 'bonus';
+        const projectId = document.getElementById('projectSelect') ? document.getElementById('projectSelect').value : '';
+
         // Ajouter XP
         this.addXP(xpGained, `Session focus (${sessionDuration} min)`);
         
@@ -310,6 +336,10 @@ class MyRPGLife {
                 this.data.bonusSessionsUnlocked = true;
                 this.showNotification('🎉 Sessions bonus débloquées! (+10 XP par session)', 'success');
             }
+        }
+
+        if (sessionDuration >= 20) {
+            this.addSessionToGoogleCalendar(projectId, sessionDuration, sessionType, this.timer.sessionStartTime || new Date());
         }
         
         // Vérifier les accomplissements
@@ -852,21 +882,86 @@ class MyRPGLife {
     }
     
     authenticateGoogle() {
-        // Simulation OAuth Google
         this.showNotification('Connexion à Google Calendar...', 'info');
-        
-        setTimeout(() => {
-            this.data.connectedAccounts.google = true;
-            this.showNotification('Google Calendar connecté avec succès! 📅', 'success');
-            document.getElementById('googleToggle').textContent = 'Connecté';
-            document.getElementById('googleToggle').classList.add('connected');
-            this.saveData();
-        }, 1500);
+        const CLIENT_ID = 'YOUR_CLIENT_ID.apps.googleusercontent.com';
+        const SCOPES = 'https://www.googleapis.com/auth/calendar.events';
+        gapi.load('client:auth2', () => {
+            gapi.client.init({ clientId: CLIENT_ID, scope: SCOPES })
+                .then(() => gapi.auth2.getAuthInstance().signIn())
+                .then(() => {
+                    this.data.connectedAccounts.google = true;
+                    this.showNotification('Google Calendar connecté avec succès! 📅', 'success');
+                    document.getElementById('googleToggle').textContent = 'Connecté';
+                    document.getElementById('googleToggle').classList.add('connected');
+                    this.saveData();
+                })
+                .catch(err => {
+                    console.error(err);
+                    this.showNotification('Erreur lors de la connexion Google', 'warning');
+                });
+        });
     }
     
     startSpotifyPlaylist() {
         // Simulation de lancement de playlist
         this.showNotification('🎵 Playlist focus lancée sur Spotify', 'success');
+    }
+
+    // Gestion des projets
+    addProject(name) {
+        const id = Date.now().toString();
+        this.data.projects.push({ id, name });
+        this.renderProjects();
+        this.renderProjectOptions();
+        this.saveData();
+    }
+
+    removeProject(id) {
+        this.data.projects = this.data.projects.filter(p => p.id !== id);
+        this.renderProjects();
+        this.renderProjectOptions();
+        this.saveData();
+    }
+
+    renderProjects() {
+        const list = document.getElementById('projectList');
+        if (list) {
+            list.innerHTML = this.data.projects.map(p => `
+                <li class="project-item">
+                    <span>${p.name}</span>
+                    <button data-action="delete" data-id="${p.id}">✖</button>
+                </li>
+            `).join('');
+        }
+    }
+
+    renderProjectOptions() {
+        const select = document.getElementById('projectSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Aucun</option>' +
+                this.data.projects.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+        }
+    }
+
+    addSessionToGoogleCalendar(projectId, duration, type, startTime) {
+        if (!this.data.connectedAccounts.google || !window.gapi) return;
+        const project = this.data.projects.find(p => p.id === projectId);
+        const summary = `Focus ${type === 'bonus' ? 'BONUS' : 'Normal'}${project ? ' - ' + project.name : ''}`;
+        const end = new Date(startTime.getTime() + duration * 60000);
+        gapi.client.calendar.events.insert({
+            calendarId: 'primary',
+            resource: {
+                summary,
+                description: `Session de ${duration} min${project ? ' sur ' + project.name : ''}`,
+                start: { dateTime: startTime.toISOString() },
+                end: { dateTime: end.toISOString() }
+            }
+        }).then(() => {
+            this.showNotification('Session enregistrée sur Google Calendar', 'success');
+        }).catch(err => {
+            console.error(err);
+            this.showNotification('Erreur lors de l\'enregistrement Google', 'warning');
+        });
     }
     
     // Gestion des données
